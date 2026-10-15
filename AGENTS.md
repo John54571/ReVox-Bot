@@ -16,6 +16,14 @@ Tu objetivo es dejar el entorno completamente funcional sin requerir que el usua
 
 ## 📋 Pasos de Ejecución para el Agente
 
+### Paso 0: Clonar el Repositorio (si no estás dentro del proyecto)
+
+Si el usuario te invocó en una carpeta vacía, cloná el repositorio oficial e ingresá a él:
+```powershell
+git clone https://github.com/John54571/ReVox-Bot.git
+cd ReVox-Bot
+```
+
 ### Paso 1: Verificación de Prerrequisitos del Sistema
 
 1. **Python 3.11+:**

@@ -70,14 +70,14 @@ flowchart LR
 
 ### 🤖 Opción 1: Instalación Asistida con Agentes de IA (Recomendado)
 
-Si usás un asistente o agente de IA (**Antigravity**, **Cursor**, **Claude Code**, **Codex**, etc.), cloná el repositorio y pegale este prompt directamente:
+Si usás un asistente o agente de IA (**Antigravity**, **Cursor**, **Claude Code**, **Codex**, etc.), solo pegale este prompt directamente:
 
 > 📋 **Prompt para tu Agente de IA:**
 > ```text
-> Instalá y configurá ReVox en mi máquina siguiendo las instrucciones de AGENTS.md. Verificá que Python 3.11 y FFmpeg estén listos en el sistema, creá el entorno virtual e instalá requirements.txt, inicializá .env a partir de .env.example y ejecutá el script para generar el acceso directo en mi Escritorio.
+> Cloná e instalá el proyecto https://github.com/John54571/ReVox-Bot en mi máquina siguiendo las instrucciones de su AGENTS.md. Verificá los prerrequisitos del sistema (Python 3.11+ y FFmpeg), configurá el entorno virtual, inicializá .env a partir de .env.example y ejecutá el script para generar el acceso directo en mi Escritorio.
 > ```
 
-El archivo [`AGENTS.md`](AGENTS.md) contiene el protocolo automatizado paso a paso para que cualquier agente configure todo de forma desatendida.
+El agente leerá automáticamente [`AGENTS.md`](https://github.com/John54571/ReVox-Bot/blob/main/AGENTS.md) dentro del repositorio y dejará todo listo sin que tengas que ejecutar comandos.
 
 ---
 
@@ -114,8 +114,8 @@ Descargá y ejecutá **[VoiceStudio](https://voicestudio.sh)**, seleccioná un m
 ### 3. Clonar y Configurar el Proyecto
 
 ```powershell
-git clone <URL_DE_TU_REPOSITORIO>
-cd fervent-hopper
+git clone https://github.com/John54571/ReVox-Bot.git
+cd ReVox-Bot
 
 # Crear entorno virtual e instalar dependencias
 python -m venv .venv
