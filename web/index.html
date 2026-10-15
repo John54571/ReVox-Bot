@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReVox — Control Panel</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #121215;
+      --card-hover: #17171c;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.5);
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: rgba(99, 102, 241, 0.12);
+      --success: #10b981;
+      --success-light: rgba(16, 185, 129, 0.12);
+      --warning: #f59e0b;
+      --warning-light: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-light: rgba(239, 68, 68, 0.12);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+    /* Header */
+    header {
+      background: rgba(18, 18, 21, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-logo-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.45);
+      border: 1.5px solid rgba(99, 102, 241, 0.6);
+      transition: transform 0.2s ease;
+    }
+    .brand-logo-img:hover {
+      transform: scale(1.06);
+    }
+    .logo-badge {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.35);
+    }
+    .brand-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .brand-version {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 500;
+      background: rgba(255,255,255,0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      display: inline-block;
+    }
+    .dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .dot.busy { background: var(--warning); box-shadow: 0 0 8px var(--warning); animation: pulse 1.5s infinite; }
+    .dot.offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    /* Buttons */
+    button {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+    .btn-danger:hover { background: #dc2626; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-icon {
+      padding: 6px 8px;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      padding: 1.5rem;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Banner Quick TTS */
+    .quick-tts-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .quick-tts-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .quick-tts-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .quick-tts-form {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .input-group {
+      flex: 1;
+      min-width: 260px;
+    }
+    input[type="text"], input[type="password"], select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px 12px;
+      outline: none;
+      transition: all 0.15s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+    .select-sm {
+      min-width: 160px;
+      max-width: 220px;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Card Panels */
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 480px;
+    }
+    .panel-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background: rgba(255,255,255,0.015);
+    }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-body {
+      padding: 1.25rem;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Guilds & Queues */
+    .guild-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.15s;
+    }
+    .guild-card:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+    .guild-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .guild-name {
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .channel-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      font-weight: 500;
+    }
+    .badge.active {
+      background: var(--primary-light);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    /* Speaking / Generating Active Indicator */
+    .now-playing {
+      background: rgba(99, 102, 241, 0.07);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .now-playing-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #a5b4fc;
+      font-weight: 600;
+    }
+    .now-playing-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    /* Queue list */
+    .queue-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .queue-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .queue-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+    .queue-item-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .queue-author {
+      font-weight: 600;
+      font-size: 12px;
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+    .queue-text {
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .queue-source {
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--text-dim);
+    }
+    .btn-delete {
+      background: transparent;
+      color: var(--text-dim);
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .btn-delete:hover {
+      color: var(--danger);
+      background: var(--danger-light);
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: 2.5rem 1rem;
+      text-align: center;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .empty-icon { font-size: 28px; opacity: 0.6; }
+
+    /* Terminal Logs */
+    .terminal-container {
+      background: #060608;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .terminal-toolbar {
+      background: #0d0d11;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .terminal-filters {
+      display: flex;
+      gap: 4px;
+    }
+    .filter-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+    }
+    .filter-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .terminal-body {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 380px;
+      max-height: 520px;
+    }
+    .log-line {
+      display: flex;
+      gap: 8px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+    .log-time { color: #52525b; user-select: none; flex-shrink: 0; }
+    .log-level {
+      font-weight: 600;
+      flex-shrink: 0;
+      font-size: 11px;
+      width: 44px;
+    }
+    .lvl-INFO { color: #38bdf8; }
+    .lvl-WARNING { color: #fbbf24; }
+    .lvl-ERROR { color: #f87171; }
+    .lvl-DEBUG { color: #71717a; }
+    .log-msg { color: #e4e4e7; flex: 1; }
+
+    /* Stats Bar */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title { font-size: 15px; font-weight: 600; }
+    .modal-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .modal-footer {
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.015);
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #18181b;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      font-size: 13px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      z-index: 200;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #toast.toast-success { border-color: var(--success); color: #6ee7b7; }
+    #toast.toast-error { border-color: var(--danger); color: #fca5a5; }
+
+    /* Equalizer animation */
+    .equalizer {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 12px;
+    }
+    .eq-bar {
+      width: 2px;
+      background: #818cf8;
+      border-radius: 1px;
+      animation: eq 0.8s ease-in-out infinite alternate;
+    }
+    .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
+    .eq-bar:nth-child(2) { height: 100%; animation-delay: 0.3s; }
+    .eq-bar:nth-child(3) { height: 60%; animation-delay: 0.2s; }
+    @keyframes eq {
+      0% { height: 20%; }
+      100% { height: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <img src="/logo.png" alt="ReVox" class="brand-logo-img">
+      <div>
+        <div class="brand-title">
+          ReVox
+          <span class="brand-version">v1.1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <!-- Bot Status Pill -->
+      <div class="status-pill" id="botStatusPill">
+        <span class="dot" id="botDot"></span>
+        <span id="botStatusText">Iniciando...</span>
+      </div>
+
+      <!-- VoiceStudio Status Pill -->
+      <div class="status-pill" id="vsStatusPill">
+        <span class="dot" id="vsDot"></span>
+        <span id="vsStatusText">VoiceStudio</span>
+      </div>
+
+      <!-- Latency Pill -->
+      <div class="status-pill" id="latencyPill" style="display:none;">
+        <span style="color:var(--text-dim)">⚡</span>
+        <span id="latencyText">-- ms</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="btnToggleBot" class="btn-primary" onclick="toggleBot()">
+        <span id="btnBotIcon">▶</span>
+        <span id="btnBotText">Iniciar Bot</span>
+      </button>
+      <button class="btn-secondary btn-icon" onclick="openConfigModal()" title="Configuración">
+        ⚙️
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main>
+    <!-- Quick TTS Broadcast Card -->
+    <section class="quick-tts-card">
+      <div class="quick-tts-header">
+        <div class="quick-tts-title">
+          <span>🔊</span> Enviar TTS al Canal o Probar
+        </div>
+        <div id="activeVoiceDisplay" class="badge">Voz: <span id="currentVoiceBadge">--</span></div>
+      </div>
+      <div class="quick-tts-form">
+        <div class="input-group">
+          <input type="text" id="quickInput" placeholder="Escribí un texto para que el bot hable..." maxlength="400" onkeydown="if(event.key==='Enter') sendTTS(false)">
+        </div>
+        <select id="serverSelect" class="select-sm" title="Elegir servidor">
+          <option value="">Seleccionar servidor...</option>
+        </select>
+        <select id="voiceSelect" class="select-sm" title="Elegir voz para hablar">
+          <option value="">Cargando voces...</option>
+        </select>
+        <button class="btn-primary" onclick="sendTTS(false)">
+          <span>🗣️</span> Hablar en Discord
+        </button>
+        <button class="btn-secondary" onclick="sendTTS(true)" title="Escuchar el audio en este navegador antes de enviarlo">
+          <span>🎧</span> Probar Audio
+        </button>
+        <audio id="audioPreview" style="display:none;" controls></audio>
+      </div>
+    </section>
+
+    <!-- Two-column grid -->
+    <div class="dashboard-grid">
+      <!-- Col 1: Voice Channels & Live Queues -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>📡</span> Canales de Voz & Colas Activas
+          </div>
+          <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="refreshState()">
+            ↻ Actualizar
+          </button>
+        </div>
+
+        <div class="panel-body" id="guildsContainer">
+          <div class="empty-state">
+            <div class="empty-icon">🔇</div>
+            <div>El bot no está en ningún canal de voz.</div>
+            <div style="font-size:12px; color:var(--text-dim); max-width:320px;">
+              Escribí <code>/entrar</code> en cualquier canal de texto de tu Discord para que ReVox se una al canal de voz.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 2: Live Logs Terminal & Stats -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>💻</span> Consola de Logs en Vivo
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="clearLogs()">
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-body" style="padding-top:0.75rem;">
+          <!-- Stats Summary -->
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-label">Hablados</div>
+              <div class="stat-value" id="statSpoken">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Errores</div>
+              <div class="stat-value" id="statErrors">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Tiempo TTS Prom.</div>
+              <div class="stat-value" id="statAvgTime">--</div>
+            </div>
+          </div>
+
+          <!-- Terminal -->
+          <div class="terminal-container">
+            <div class="terminal-toolbar">
+              <div class="terminal-filters">
+                <button class="filter-btn active" onclick="setLogFilter('ALL')">TODOS</button>
+                <button class="filter-btn" onclick="setLogFilter('INFO')">INFO</button>
+                <button class="filter-btn" onclick="setLogFilter('WARNING')">WARN</button>
+                <button class="filter-btn" onclick="setLogFilter('ERROR')">ERROR</button>
+              </div>
+              <label style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text-dim); cursor:pointer;">
+                <input type="checkbox" id="autoScrollCheck" checked> Auto-scroll
+              </label>
+            </div>
+            <div class="terminal-body" id="logBody">
+              <!-- Logs dynamically appended here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Configuración -->
+  <div class="modal-backdrop" id="configModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ Configuración del Bot</div>
+        <button class="btn-secondary btn-icon" onclick="closeConfigModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label class="form-label">Discord Bot Token</label>
+          <div style="display:flex; gap:6px;">
+            <input type="password" id="cfgToken" placeholder="Pegar token de Discord aquí...">
+            <button type="button" class="btn-secondary" onclick="toggleTokenVisibility()">👁️</button>
+          </div>
+          <div class="form-hint">Obtenelo en Discord Developer Portal &gt; Bot &gt; Reset Token.</div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">VoiceStudio URL</label>
+          <input type="text" id="cfgVsUrl" placeholder="http://127.0.0.1:3900">
+          <div class="form-hint">Dirección local donde corre VoiceStudio (puerto 3900 por defecto).</div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Voz por Defecto</label>
+          <select id="cfgDefaultVoice">
+            <option value="default">default (Voz del motor)</option>
+          </select>
+          <div class="form-hint">Se asigna a servidores nuevos al ingresar.</div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Límite de caracteres por mensaje</label>
+          <input type="number" id="cfgMaxChars" min="50" max="2000" placeholder="400">
+        </div>
+
+        <div class="form-field" style="flex-direction:row; align-items:center; gap:8px;">
+          <input type="checkbox" id="cfgAutostart">
+          <label for="cfgAutostart" class="form-label" style="cursor:pointer;">Iniciar bot automáticamente al abrir este panel</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeConfigModal()">Cancelar</button>
+        <button class="btn-primary" onclick="saveConfig()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast"></div>
+
+  <script>
+    let appState = {
+      bot_status: 'stopped',
+      vs_status: false,
+      guilds: [],
+      all_guilds: [],
+      voices: [],
+      config: {},
+      stats: { spoken: 0, errors: 0, gen_ms_total: 0 }
+    };
+    let logFilter = 'ALL';
+    let allLogs = [];
+
+    // Notifications
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.className = 'show ' + (type === 'error' ? 'toast-error' : 'toast-success');
+      setTimeout(() => { toast.className = ''; }, 3500);
+    }
+
+    // Modal
+    function openConfigModal() {
+      fetch('/api/config')
+        .then(r => r.json())
+        .then(cfg => {
+          document.getElementById('cfgToken').value = cfg.token || '';
+          document.getElementById('cfgVsUrl').value = cfg.vs_url || 'http://127.0.0.1:3900';
+          document.getElementById('cfgMaxChars').value = cfg.max_chars || 400;
+          document.getElementById('cfgAutostart').checked = !!cfg.autostart;
+
+          // Populate voices in select
+          const sel = document.getElementById('cfgDefaultVoice');
+          sel.innerHTML = '<option value="default">default (Voz del motor)</option>';
+          appState.voices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.voice_id;
+            opt.textContent = `${v.name} (${v.voice_id})`;
+            if (v.voice_id === cfg.voice) opt.selected = true;
+            sel.appendChild(opt);
+          });
+          document.getElementById('configModal').classList.add('open');
+        });
+    }
+
+    function closeConfigModal() {
+      document.getElementById('configModal').classList.remove('open');
+    }
+
+    function toggleTokenVisibility() {
+      const el = document.getElementById('cfgToken');
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
+    function saveConfig() {
+      const payload = {
+        token: document.getElementById('cfgToken').value.trim(),
+        vs_url: document.getElementById('cfgVsUrl').value.trim(),
+        voice: document.getElementById('cfgDefaultVoice').value,
+        max_chars: parseInt(document.getElementById('cfgMaxChars').value, 10) || 400,
+        autostart: document.getElementById('cfgAutostart').checked
+      };
+
+      fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.ok) {
+          showToast('Configuración guardada.', 'success');
+          closeConfigModal();
+          refreshState();
+        } else {
+          showToast(res.error || 'Error al guardar.', 'error');
+        }
+      });
+    }
+
+    // Start / Stop Bot
+    function toggleBot() {
+      const btn = document.getElementById('btnToggleBot');
+      btn.disabled = true;
+
+      const endpoint = (appState.bot_status === 'running') ? '/api/bot/stop' : '/api/bot/start';
+      fetch(endpoint, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+          btn.disabled = false;
+          if (res.ok) {
+            showToast(res.message || 'Comando enviado.', 'success');
+          } else {
+            showToast(res.error || 'Error en la acción.', 'error');
+          }
+          refreshState();
+        })
+        .catch(err => {
+          btn.disabled = false;
+          showToast('Error de conexión con el panel.', 'error');
+        });
+    }
+
+    // Render Dashboard State
+    function renderState(data) {
+      if (!data) return;
+
+      // Update bot status
+      appState.bot_status = data.bot_status || 'stopped';
+      const botDot = document.getElementById('botDot');
+      const botStatusText = document.getElementById('botStatusText');
+      const btnText = document.getElementById('btnBotText');
+      const btnIcon = document.getElementById('btnBotIcon');
+      const btn = document.getElementById('btnToggleBot');
+      const latencyPill = document.getElementById('latencyPill');
+
+      if (appState.bot_status === 'running') {
+        botDot.className = 'dot online';
+        botStatusText.textContent = data.bot_user ? data.bot_user : 'En línea';
+        btnText.textContent = 'Detener Bot';
+        btnIcon.textContent = '⏹';
+        btn.className = 'btn-danger';
+
+        if (data.latency_ms !== null && data.latency_ms !== undefined) {
+          latencyPill.style.display = 'inline-flex';
+          document.getElementById('latencyText').textContent = `${data.latency_ms} ms`;
+        } else {
+          latencyPill.style.display = 'none';
+        }
+      } else if (appState.bot_status === 'starting') {
+        botDot.className = 'dot busy';
+        botStatusText.textContent = 'Conectando...';
+        btnText.textContent = 'Iniciando...';
+        btnIcon.textContent = '⏳';
+        btn.className = 'btn-secondary';
+        latencyPill.style.display = 'none';
+      } else {
+        botDot.className = 'dot offline';
+        botStatusText.textContent = 'Detenido';
+        btnText.textContent = 'Iniciar Bot';
+        btnIcon.textContent = '▶';
+        btn.className = 'btn-primary';
+        latencyPill.style.display = 'none';
+      }
+
+      // VoiceStudio Status
+      const vsDot = document.getElementById('vsDot');
+      const vsText = document.getElementById('vsStatusText');
+      if (data.voicestudio_online) {
+        vsDot.className = 'dot online';
+        vsText.textContent = 'VoiceStudio :3900';
+      } else {
+        vsDot.className = 'dot offline';
+        vsText.textContent = 'VoiceStudio Offline';
+      }
+
+      // Voice dropdown & badge
+      if (data.voices && JSON.stringify(data.voices) !== JSON.stringify(appState.voices)) {
+        appState.voices = data.voices;
+        const vSel = document.getElementById('voiceSelect');
+        vSel.innerHTML = '';
+        data.voices.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v.voice_id;
+          opt.textContent = `${v.name} (${v.language || 'ES'})`;
+          if (v.voice_id === data.config?.voice) opt.selected = true;
+          vSel.appendChild(opt);
+        });
+      }
+      document.getElementById('currentVoiceBadge').textContent = data.config?.voice || 'default';
+
+      // Server dropdown in Quick TTS
+      const sSel = document.getElementById('serverSelect');
+      const prevVal = sSel.value;
+      sSel.innerHTML = '';
+      if (data.guilds && data.guilds.length > 0) {
+        data.guilds.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.id;
+          opt.textContent = `${g.name} (${g.voice_channel || 'Sin voz'})`;
+          sSel.appendChild(opt);
+        });
+        if (prevVal && [...sSel.options].some(o => o.value === prevVal)) {
+          sSel.value = prevVal;
+        }
+      } else {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Sin canales de voz activos';
+        sSel.appendChild(opt);
+      }
+
+      // Render Active Guilds & Queues
+      const guildsContainer = document.getElementById('guildsContainer');
+      if (!data.guilds || data.guilds.length === 0) {
+        guildsContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔇</div>
+            <div>El bot no está en ningún canal de voz.</div>
+            <div style="font-size:12px; color:var(--text-dim); max-width:320px;">
+              Escribí <code>/entrar</code> en cualquier canal de Discord para que ReVox se una a tu canal de voz.
+            </div>
+          </div>
+        `;
+      } else {
+        guildsContainer.innerHTML = '';
+        data.guilds.forEach(g => {
+          const card = document.createElement('div');
+          card.className = 'guild-card';
+
+          const isSpeaking = g.phase === 'hablando';
+          const isGenerating = g.phase === 'generando';
+
+          let nowPlayingHtml = '';
+          if (g.now) {
+            nowPlayingHtml = `
+              <div class="now-playing">
+                <div class="now-playing-header">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    ${isSpeaking ? '<div class="equalizer"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div> Hablando ahora:' : '⏳ Generando audio:'}
+                    <span>${escapeHtml(g.now.author)}</span>
+                  </div>
+                  <button class="btn-secondary" style="font-size:11px; padding:2px 6px;" onclick="skipAudio('${g.id}')">⏭ Saltar</button>
+                </div>
+                <div class="now-playing-text">"${escapeHtml(g.now.text)}"</div>
+              </div>
+            `;
+          }
+
+          let queueItemsHtml = '';
+          if (g.queue && g.queue.length > 0) {
+            queueItemsHtml = g.queue.map(item => `
+              <div class="queue-item">
+                <div class="queue-item-info">
+                  <span class="queue-source">${escapeHtml(item.source)}</span>
+                  <span class="queue-author">${escapeHtml(item.author)}:</span>
+                  <span class="queue-text" title="${escapeHtml(item.text)}">${escapeHtml(item.text)}</span>
+                </div>
+                <button class="btn-delete" title="Quitar de la cola" onclick="deleteQueueItem('${g.id}', ${item.id})">✕</button>
+              </div>
+            `).join('');
+          } else {
+            queueItemsHtml = `<div style="font-size:12px; color:var(--text-dim); padding:4px 0;">La cola está vacía.</div>`;
+          }
+
+          card.innerHTML = `
+            <div class="guild-header">
+              <div class="guild-name">
+                <span>🛡️</span> ${escapeHtml(g.name)}
+              </div>
+              <div class="channel-badges">
+                <span class="badge active">🔊 ${escapeHtml(g.voice_channel || 'Sin voz')}</span>
+                <span class="badge">💬 #${escapeHtml(g.text_channel || 'general')}</span>
+                <span class="badge">🎙️ ${escapeHtml(g.voice)}</span>
+                <button class="btn-secondary" style="font-size:11px; padding:2px 8px; color:var(--danger);" onclick="leaveVoice('${g.id}')" title="Desconectar del canal de voz">
+                  Desconectar
+                </button>
+              </div>
+            </div>
+            ${nowPlayingHtml}
+            <div class="queue-container">
+              <div class="queue-title">
+                <span>En Cola (${g.queue ? g.queue.length : 0})</span>
+                ${g.queue && g.queue.length > 0 ? `<button class="btn-secondary" style="font-size:10px; padding:1px 6px;" onclick="skipAudio('${g.id}', true)">Vaciar</button>` : ''}
+              </div>
+              ${queueItemsHtml}
+            </div>
+          `;
+          guildsContainer.appendChild(card);
+        });
+      }
+
+      // Stats
+      if (data.stats) {
+        document.getElementById('statSpoken').textContent = data.stats.spoken || 0;
+        document.getElementById('statErrors').textContent = data.stats.errors || 0;
+        if (data.stats.spoken > 0 && data.stats.gen_ms_total) {
+          const avg = Math.round(data.stats.gen_ms_total / data.stats.spoken);
+          document.getElementById('statAvgTime').textContent = `${avg} ms`;
+        } else {
+          document.getElementById('statAvgTime').textContent = '--';
+        }
+      }
+    }
+
+    // Quick TTS send or preview
+    function sendTTS(previewOnly = false) {
+      const input = document.getElementById('quickInput');
+      const text = input.value.trim();
+      const voice = document.getElementById('voiceSelect').value;
+      const guild_id = document.getElementById('serverSelect').value;
+
+      if (!text) {
+        showToast('Escribí un texto para hablar.', 'error');
+        input.focus();
+        return;
+      }
+
+      if (previewOnly) {
+        showToast('Generando preview de audio...', 'info');
+        fetch('/api/tts/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, voice })
+        })
+        .then(r => {
+          if (!r.ok) throw new Error('Error al generar TTS');
+          return r.blob();
+        })
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const audio = document.getElementById('audioPreview');
+          audio.src = url;
+          audio.play();
+          showToast('Reproduciendo audio localmente.', 'success');
+        })
+        .catch(err => {
+          showToast('VoiceStudio no respondió o falló la generación.', 'error');
+        });
+        return;
+      }
+
+      if (!guild_id) {
+        showToast('El bot no está en ningún canal de voz activo en Discord.', 'error');
+        return;
+      }
+
+      fetch('/api/bot/say', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guild_id, text, voice })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.ok) {
+          showToast('Mensaje agregado a la cola.', 'success');
+          input.value = '';
+          refreshState();
+        } else {
+          showToast(res.error || 'Error al enviar.', 'error');
+        }
+      });
+    }
+
+    function skipAudio(guild_id, clear = false) {
+      fetch('/api/bot/skip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guild_id, clear })
+      }).then(() => refreshState());
+    }
+
+    function deleteQueueItem(guild_id, item_id) {
+      fetch('/api/bot/delete_queue_item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guild_id, item_id })
+      }).then(() => refreshState());
+    }
+
+    function leaveVoice(guild_id) {
+      fetch('/api/bot/leave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guild_id })
+      }).then(() => refreshState());
+    }
+
+    // Logs handling
+    function appendLog(log) {
+      allLogs.push(log);
+      if (allLogs.length > 500) allLogs.shift();
+      renderSingleLog(log);
+    }
+
+    function renderSingleLog(log) {
+      if (logFilter !== 'ALL' && log.level !== logFilter) return;
+
+      const body = document.getElementById('logBody');
+      const div = document.createElement('div');
+      div.className = 'log-line';
+      div.innerHTML = `
+        <span class="log-time">${escapeHtml(log.time)}</span>
+        <span class="log-level lvl-${escapeHtml(log.level)}">${escapeHtml(log.level)}</span>
+        <span class="log-msg">${escapeHtml(log.msg)}</span>
+      `;
+      body.appendChild(div);
+
+      if (document.getElementById('autoScrollCheck').checked) {
+        body.scrollTop = body.scrollHeight;
+      }
+    }
+
+    function renderAllLogs() {
+      const body = document.getElementById('logBody');
+      body.innerHTML = '';
+      allLogs.forEach(log => renderSingleLog(log));
+      if (document.getElementById('autoScrollCheck').checked) {
+        body.scrollTop = body.scrollHeight;
+      }
+    }
+
+    function setLogFilter(filter) {
+      logFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText === filter || (filter === 'ALL' && btn.innerText === 'TODOS'));
+      });
+      renderAllLogs();
+    }
+
+    function clearLogs() {
+      allLogs = [];
+      document.getElementById('logBody').innerHTML = '';
+      fetch('/api/logs/clear', { method: 'POST' });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      })[m]);
+    }
+
+    // Refresh REST API
+    function refreshState() {
+      fetch('/api/state')
+        .then(r => r.json())
+        .then(data => renderState(data))
+        .catch(() => {});
+    }
+
+    // Connect SSE EventSource for live streaming
+    function connectEvents() {
+      const es = new EventSource('/api/events');
+
+      es.addEventListener('state', e => {
+        try {
+          const data = JSON.parse(e.data);
+          renderState(data);
+        } catch(err) {}
+      });
+
+      es.addEventListener('log', e => {
+        try {
+          const log = JSON.parse(e.data);
+          appendLog(log);
+        } catch(err) {}
+      });
+
+      es.onerror = () => {
+        setTimeout(connectEvents, 3000);
+      };
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshState();
+      connectEvents();
+      setInterval(refreshState, 3500); // Polling fallback for status sync
+    });
+  </script>
+</body>
+</html>
