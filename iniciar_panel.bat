@@ -8,6 +8,16 @@ echo ========================================================
 echo.
 
 if not exist ".venv\Scripts\python.exe" (
+    echo [INFO] Verificando instalacion de Python...
+    where python >nul 2>nul
+    if %ERRORLEVEL% NEQ 0 (
+        echo [ERROR] No se encontro Python instalado en el sistema.
+        echo Por favor instala Python 3.11 ejecutando en PowerShell:
+        echo   winget install Python.Python.3.11
+        echo.
+        pause
+        exit /b 1
+    )
     echo [INFO] Creando entorno virtual e instalando dependencias...
     python -m venv .venv
     call .venv\Scripts\pip install -r requirements.txt

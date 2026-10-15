@@ -1028,17 +1028,31 @@
       }
 
       // Voice dropdown & badge
-      if (data.voices && JSON.stringify(data.voices) !== JSON.stringify(appState.voices)) {
-        appState.voices = data.voices;
+      if (data.voices && data.voices.length > 0) {
+        if (JSON.stringify(data.voices) !== JSON.stringify(appState.voices)) {
+          appState.voices = data.voices;
+          const vSel = document.getElementById('voiceSelect');
+          vSel.innerHTML = '';
+          data.voices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.voice_id;
+            opt.textContent = `${v.name} (${v.language || 'ES'})`;
+            if (v.voice_id === data.config?.voice) opt.selected = true;
+            vSel.appendChild(opt);
+          });
+        }
+      } else {
+        // Fallback si VoiceStudio está offline: mostrar al menos la voz configurada
         const vSel = document.getElementById('voiceSelect');
-        vSel.innerHTML = '';
-        data.voices.forEach(v => {
+        if (vSel.options.length === 0 || vSel.options[0].textContent.includes('Cargando')) {
+          vSel.innerHTML = '';
+          const cfgVoice = data.config?.voice || 'default';
           const opt = document.createElement('option');
-          opt.value = v.voice_id;
-          opt.textContent = `${v.name} (${v.language || 'ES'})`;
-          if (v.voice_id === data.config?.voice) opt.selected = true;
+          opt.value = cfgVoice;
+          opt.textContent = `${cfgVoice} (Voz configurada)`;
+          opt.selected = true;
           vSel.appendChild(opt);
-        });
+        }
       }
       document.getElementById('currentVoiceBadge').textContent = data.config?.voice || 'default';
 

@@ -8,6 +8,7 @@ import itertools
 import logging
 import math
 import os
+import re
 import time
 from collections import deque
 from dataclasses import asdict, dataclass, field
@@ -19,6 +20,23 @@ from dotenv import load_dotenv
 
 log = logging.getLogger("revox")
 ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+
+
+def sanitize_tts_text(raw_text: str, max_chars: int = 400) -> str:
+    """Limpia el texto antes de enviarlo a VoiceStudio para que suene natural al hablar."""
+    if not raw_text:
+        return ""
+    # Reemplazar bloques de código ```...``` por "bloque de código"
+    t = re.sub(r"```[\s\S]*?```", " bloque de código ", raw_text)
+    # Reemplazar enlaces http/https por "enlace" para evitar lectura letra por letra
+    t = re.sub(r"https?://\S+", " enlace ", t)
+    # Reemplazar menciones de canales o roles
+    t = re.sub(r"<#\d+>", " canal ", t)
+    t = re.sub(r"<@&\d+>", " rol ", t)
+    t = re.sub(r"\|\|(.*?)\|\|", r"\1", t)
+    # Normalizar espacios en blanco y saltos de línea repetidos
+    t = " ".join(t.split())
+    return t[:max_chars].strip()
 
 
 def load_config() -> dict:
@@ -132,6 +150,13 @@ class TTSBot(discord.Client):
                 t0 = time.perf_counter()
                 audio = await self.tts(item.text, st.voice)
                 entry["gen_ms"] = round((time.perf_counter() - t0) * 1000)
+
+                # Re-verificar que el bot siga conectado al canal de voz tras la síntesis
+                vc = st.guild.voice_client
+                if not vc or not vc.is_connected():
+                    log.warning("[%s] El bot fue desconectado de voz mientras se generaba el audio.", st.guild.name)
+                    continue
+
                 st.phase = "hablando"
                 done = asyncio.Event()
                 vc.play(
@@ -157,10 +182,15 @@ class TTSBot(discord.Client):
 
     def enqueue(self, guild_id: int, text: str, author: str, source: str) -> bool:
         st = self.state.get(guild_id)
-        text = text.strip()[: self.cfg["max_chars"]]
-        if not st or not text:
+        if not st:
             return False
-        st.push(Item(text, author, source))
+        clean_text = sanitize_tts_text(text, self.cfg["max_chars"])
+        if not clean_text:
+            return False
+        # Protección anti-spam: máximo 30 mensajes pendientes por servidor
+        if len(st.items) >= 30:
+            st.items.popleft()  # descartar el mensaje más viejo para dar lugar al nuevo
+        st.push(Item(clean_text, author, source))
         return True
 
     def skip(self, guild_id: int, clear: bool = False):

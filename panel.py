@@ -353,6 +353,12 @@ AUTOSTART={autostart}
     try:
         ENV_PATH.write_text(env_content, encoding="utf-8")
         log.info("Configuración actualizada en .env")
+        # Actualización en caliente si el bot está activo
+        if manager.bot:
+            manager.bot.cfg["voice"] = voice
+            manager.bot.cfg["max_chars"] = max_chars
+            manager.bot.cfg["vs_url"] = vs_url
+            log.info("Configuración del bot en memoria actualizada en caliente sin reiniciar.")
         return web.json_response({"ok": True})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
@@ -427,7 +433,17 @@ async def main():
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "127.0.0.1", PORT)
-    await site.start()
+    try:
+        await site.start()
+    except OSError as e:
+        if getattr(e, "winerror", None) == 10048 or "10048" in str(e):
+            log.warning("⚠️ El puerto %d ya está en uso. Es probable que ya tengas otra ventana del panel abierta.", PORT)
+            try:
+                webbrowser.open(f"http://127.0.0.1:{PORT}")
+            except Exception:
+                pass
+            return
+        raise
 
     url = f"http://127.0.0.1:{PORT}"
     log.info("╔════════════════════════════════════════════════════════╗")
