@@ -1,25 +1,25 @@
-# Código de Conducta de la Comunidad (CODE_OF_CONDUCT.md)
+# Community Code of Conduct (CODE_OF_CONDUCT.md)
 
-Como miembros, contribuyentes y líderes de la comunidad de **ReVox**, nos comprometemos a hacer de la participación en nuestro proyecto una experiencia libre de acoso para todos, independientemente de la edad, dimensión corporal, discapacidad visible o invisible, etnicidad, características sexuales, identidad y expresión de género, nivel de experiencia, educación, nivel socioeconómico, nacionalidad, apariencia personal, raza, religión o identidad y orientación sexual.
+As contributors and maintainers of **ReVox**, we pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
-Nos comprometemos a actuar e interactuar de maneras que contribuyan a una comunidad abierta, acogedora, diversa, inclusiva y saludable.
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
-## Nuestros Estándares
+## Our Standards
 
-Ejemplos de comportamientos que contribuyen a un ambiente positivo:
-- Demostrar empatía y amabilidad hacia otras personas.
-- Respetar diferentes opiniones, puntos de vista y experiencias.
-- Dar y recibir retroalimentación constructiva de manera adecuada.
-- Aceptar la responsabilidad y disculparse con quienes se vean afectados por nuestros errores.
-- Concentrarse en lo que es mejor no solo para nosotros como individuos, sino para la comunidad en general.
+Examples of behavior that contributes to a positive environment:
+- Demonstrating empathy and kindness toward other people.
+- Being respectful of differing opinions, viewpoints, and experiences.
+- Giving and gracefully accepting constructive feedback.
+- Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience.
+- Focusing on what is best not just for us as individuals, but for the overall community.
 
-Ejemplos de comportamientos inaceptables:
-- El uso de lenguaje o imágenes sexualizadas y la atención sexual no deseada.
-- Insultos despectivos, ataques personales o políticos.
-- Acoso público o privado.
-- Publicación de información privada de otros, como direcciones físicas o electrónicas, sin su permiso explícito.
-- Otra conducta que razonablemente pueda considerarse inapropiada en un entorno profesional.
+Examples of unacceptable behavior:
+- The use of sexualized language or imagery, and sexual attention or advances of any kind.
+- Trolling, insulting or derogatory comments, and personal or political attacks.
+- Public or private harassment.
+- Publishing others' private information, such as physical or email addresses, without their explicit permission.
+- Other conduct which could reasonably be considered inappropriate in a professional setting.
 
-## Cumplimiento
+## Enforcement
 
-Las instancias de comportamiento abusivo, acosador o de otro modo inaceptable pueden ser reportadas a los administradores del proyecto. Todas las quejas serán revisadas e investigadas de manera justa y confidencial.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project administrators. All complaints will be reviewed and investigated promptly and fairly.

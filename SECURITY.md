@@ -1,30 +1,30 @@
-# Política de Seguridad (SECURITY.md)
+# Security Policy (SECURITY.md)
 
-La seguridad y la privacidad de los usuarios son una prioridad en **ReVox**.
+Security and user privacy are top priorities for **ReVox**.
 
-## Versiones Soportadas
+## Supported Versions
 
-| Versión | Soportada |
+| Version | Supported |
 |---|---|
-| 1.x (actual) | :white_check_mark: |
+| 1.x (current) | :white_check_mark: |
 | < 1.0 | :x: |
 
 ---
 
-## 🔒 Manejo Seguro de Tokens y Credenciales
+## 🔒 Safe Handling of Tokens and Credentials
 
-- **Nunca compartas tu `DISCORD_TOKEN`:** El token del bot otorga acceso total para controlar tu aplicación en Discord.
-- El archivo `.env` está expresamente excluido del repositorio mediante `.gitignore`. Si alguna vez subís accidentalmente un token a GitHub, entrá de inmediato a [Discord Developer Portal](https://discord.com/developers/applications) y hacé clic en **Reset Token**.
-- ReVox solo se comunica de forma local en tu máquina (`127.0.0.1` / `localhost`). La API web (`5050`) y la conexión a VoiceStudio (`3900`) operan en la interfaz de loopback y no deben ser expuestas públicamente sin túneles con autenticación o proxys inversos seguros.
+- **Never share your `DISCORD_TOKEN`:** Your Discord bot token grants full control over your bot application in Discord.
+- The `.env` file is explicitly ignored from Git tracking via `.gitignore`. If you ever accidentally commit or leak a token, navigate immediately to the [Discord Developer Portal](https://discord.com/developers/applications) and click **Reset Token**.
+- ReVox only communicates locally on your machine (`127.0.0.1` / `localhost`). The web API (`5050`) and VoiceStudio connection (`3900`) operate strictly on the loopback interface and should not be exposed to the public Internet without secure reverse proxies or authenticated tunnels.
 
 ---
 
-## 🚨 Reporte de Vulnerabilidades
+## 🚨 Reporting a Vulnerability
 
-Si descubrís un fallo de seguridad o una vulnerabilidad potencial:
+If you discover a security flaw or vulnerability:
 
-1. **NO abras un Issue público** en GitHub describiendo la vulnerabilidad.
-2. Reportalo de forma privada a través de la pestaña de **Security Advisories** del repositorio en GitHub o por correo electrónico al mantenedor.
-3. Incluí detalles sobre cómo reproducir el problema y un entorno de prueba si es posible.
+1. **DO NOT open a public Issue** disclosing the vulnerability.
+2. Report it privately via the **Security Advisories** tab on the GitHub repository or contact the project maintainer directly.
+3. Include reproducible steps and an environment description if possible.
 
-Nos comprometemos a responder y evaluar cualquier reporte en un plazo razonable antes de publicar una solución o parche.
+We are committed to reviewing and addressing any security reports promptly before releasing public patches.

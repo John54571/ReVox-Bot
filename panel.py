@@ -1,12 +1,12 @@
-"""Panel de Control Web para ReVox (Host UI)
+"""ReVox Web Control Panel (Host UI)
 
-Inicia un servidor local minimalista en http://127.0.0.1:5050 con:
-- Botón para Iniciar / Detener el bot de Discord.
-- Monitoreo en tiempo real de canales de voz y colas de mensajes.
-- Detección automática del estado de VoiceStudio (:3900).
-- Reproductor de prueba de audio TTS local (preview directo en el navegador).
-- Consola de logs en vivo vía Server-Sent Events (SSE) con filtros y auto-scroll.
-- Ajuste de configuración sin editar archivos a mano.
+Runs a minimalist local web server at http://127.0.0.1:5050 providing:
+- One-click Start / Stop control for the Discord bot.
+- Real-time monitoring of voice channels and message queues.
+- Automatic availability check for VoiceStudio (:3900).
+- Local TTS audio preview player (direct playback in the browser).
+- Live console logs via Server-Sent Events (SSE) with severity filters and auto-scroll.
+- Hot configuration updates without manual file editing.
 """
 import asyncio
 import datetime
@@ -25,7 +25,7 @@ from aiohttp import web
 
 from bot import TTSBot, fetch_voices, load_config, vs_headers
 
-# Configuración básica de logging
+# Basic logging setup
 logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s] [%(levelname)-7s] %(name)s: %(message)s",
@@ -42,7 +42,7 @@ _log_id = itertools.count(1)
 
 
 class BroadcastLogHandler(logging.Handler):
-    """Intercepta logs y los guarda en un buffer circular, además de retransmitirlos a clientes SSE."""
+    """Intercepts log records into a circular buffer and broadcasts them to SSE clients."""
 
     def __init__(self, capacity: int = 300):
         super().__init__()
@@ -51,7 +51,6 @@ class BroadcastLogHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord):
         try:
-            msg = self.format(record)
             entry = {
                 "id": next(_log_id),
                 "time": datetime.datetime.fromtimestamp(record.created).strftime("%H:%M:%S"),
@@ -76,7 +75,7 @@ logging.getLogger("revox").setLevel(logging.INFO)
 
 
 class BotManager:
-    """Administra el ciclo de vida de la instancia de TTSBot."""
+    """Manages the lifecycle of the TTSBot instance."""
 
     def __init__(self):
         self.status = "stopped"  # "stopped" | "starting" | "running" | "stopping" | "error"
@@ -87,36 +86,36 @@ class BotManager:
 
     async def start(self) -> tuple[bool, str]:
         if self.status in ("running", "starting"):
-            return False, "El bot ya está corriendo o iniciando."
+            return False, "Bot is already running or starting."
 
         self.cfg = load_config()
         if not self.cfg["token"]:
             self.status = "error"
-            self.last_error = "Falta el token de Discord en la configuración."
+            self.last_error = "Discord bot token is missing in configuration."
             return False, self.last_error
 
         self.status = "starting"
         self.last_error = None
-        log.info("Iniciando bot ReVox con token configurado...")
+        log.info("Starting ReVox bot with configured token...")
 
         try:
             self.bot = TTSBot(self.cfg)
             self.task = asyncio.create_task(self._run_bot())
-            # Esperar hasta que esté listo o falle en los primeros 10s
+            # Wait up to 10s for bot to become ready or fail
             for _ in range(40):
                 await asyncio.sleep(0.25)
                 if self.bot and self.bot.is_ready():
                     self.status = "running"
-                    log.info("Bot en línea y conectado a Discord Gateway.")
-                    return True, "Bot iniciado correctamente."
+                    log.info("Bot is online and connected to Discord Gateway.")
+                    return True, "Bot started successfully."
                 if self.status == "error":
-                    return False, self.last_error or "Error desconocido al iniciar el bot."
+                    return False, self.last_error or "Unknown error while starting the bot."
             self.status = "running"
-            return True, "Bot conectado (sincronizando comandos)."
+            return True, "Bot connected (syncing application commands)."
         except Exception as e:
             self.status = "error"
             self.last_error = str(e)
-            log.error("Fallo al iniciar bot: %s", e)
+            log.error("Failed to start bot: %s", e)
             return False, str(e)
 
     async def _run_bot(self):
@@ -127,22 +126,22 @@ class BotManager:
         except Exception as e:
             self.status = "error"
             self.last_error = str(e)
-            log.error("Excepción en bot de Discord: %s", e)
+            log.error("Discord bot runtime exception: %s", e)
         finally:
             if self.status not in ("error", "stopped"):
                 self.status = "stopped"
 
     async def stop(self) -> tuple[bool, str]:
         if self.status == "stopped":
-            return True, "El bot ya está detenido."
+            return True, "Bot is already stopped."
 
         self.status = "stopping"
-        log.info("Deteniendo bot ReVox...")
+        log.info("Stopping ReVox bot...")
         if self.bot:
             try:
                 await self.bot.close()
             except Exception as e:
-                log.warning("Aviso cerrando bot: %s", e)
+                log.warning("Notice while closing bot: %s", e)
         if self.task and not self.task.done():
             self.task.cancel()
             try:
@@ -153,8 +152,8 @@ class BotManager:
         self.bot = None
         self.task = None
         self.status = "stopped"
-        log.info("Bot detenido.")
-        return True, "Bot detenido."
+        log.info("Bot stopped.")
+        return True, "Bot stopped."
 
     def snapshot(self) -> dict:
         if self.bot and self.bot.is_ready():
@@ -184,7 +183,7 @@ manager = BotManager()
 
 
 async def check_voicestudio(cfg: dict) -> tuple[bool, list[dict]]:
-    """Comprueba la disponibilidad de VoiceStudio y devuelve los perfiles de voz."""
+    """Check VoiceStudio availability and return saved profile voices."""
     url = f"{cfg['vs_url']}/v1/audio/voices"
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2.5)) as session:
@@ -201,12 +200,12 @@ async def check_voicestudio(cfg: dict) -> tuple[bool, list[dict]]:
     return False, []
 
 
-# ---------- Controladores HTTP API ----------
+# ---------- HTTP API Handlers ----------
 
 async def handle_index(request: web.Request) -> web.Response:
     index_path = WEB_DIR / "index.html"
     if not index_path.exists():
-        return web.Response(text="index.html no encontrado", status=404)
+        return web.Response(text="index.html not found", status=404)
     return web.FileResponse(index_path)
 
 
@@ -248,7 +247,7 @@ async def handle_bot_stop(request: web.Request) -> web.Response:
 
 async def handle_bot_say(request: web.Request) -> web.Response:
     if not manager.bot or not manager.bot.is_ready():
-        return web.json_response({"ok": False, "error": "El bot no está en línea."})
+        return web.json_response({"ok": False, "error": "Bot is not online."})
 
     try:
         body = await request.json()
@@ -256,14 +255,14 @@ async def handle_bot_say(request: web.Request) -> web.Response:
         text = str(body.get("text", "")).strip()
         voice = body.get("voice")
     except Exception:
-        return web.json_response({"ok": False, "error": "Parámetros inválidos."})
+        return web.json_response({"ok": False, "error": "Invalid parameters."})
 
     if voice:
         manager.bot.set_guild_voice(guild_id, voice)
 
-    ok = manager.bot.enqueue(guild_id, text, author="Panel Host", source="panel")
+    ok = manager.bot.enqueue(guild_id, text, author="Host Panel", source="panel")
     if not ok:
-        return web.json_response({"ok": False, "error": "No se pudo encolar (canal no activo o texto vacío)."})
+        return web.json_response({"ok": False, "error": "Could not enqueue (no active channel or empty text)."})
 
     return web.json_response({"ok": True})
 
@@ -298,14 +297,14 @@ async def handle_bot_leave(request: web.Request) -> web.Response:
 
 
 async def handle_tts_preview(request: web.Request) -> web.Response:
-    """Genera audio localmente en VoiceStudio y devuelve el WAV para escucharlo en el navegador."""
+    """Generate audio locally via VoiceStudio and return WAV bytes for preview."""
     body = await request.json()
     text = str(body.get("text", "")).strip()
     voice = str(body.get("voice") or "default")
     cfg = load_config()
 
     if not text:
-        return web.Response(text="Texto vacío", status=400)
+        return web.Response(text="Empty text", status=400)
 
     payload = {"model": "tts-1", "input": text, "voice": voice, "response_format": "wav"}
     url = f"{cfg['vs_url']}/v1/audio/speech"
@@ -315,11 +314,11 @@ async def handle_tts_preview(request: web.Request) -> web.Response:
             async with session.post(url, json=payload, headers=vs_headers(cfg)) as r:
                 if r.status != 200:
                     err = await r.text()
-                    return web.Response(text=f"Error VoiceStudio: {err[:200]}", status=502)
+                    return web.Response(text=f"VoiceStudio error: {err[:200]}", status=502)
                 audio_bytes = await r.read()
                 return web.Response(body=audio_bytes, content_type="audio/wav")
     except Exception as e:
-        return web.Response(text=f"Fallo de conexión con VoiceStudio: {e}", status=502)
+        return web.Response(text=f"Failed to connect to VoiceStudio: {e}", status=502)
 
 
 async def handle_get_config(request: web.Request) -> web.Response:
@@ -341,8 +340,7 @@ async def handle_save_config(request: web.Request) -> web.Response:
     max_chars = int(body.get("max_chars", 400))
     autostart = "1" if body.get("autostart") else "0"
 
-    # Leer archivo .env actual para conservar comentarios si existen o reescribir
-    env_content = f"""# Configuración de ReVox TTS Bot
+    env_content = f"""# ReVox TTS Bot Configuration
 DISCORD_TOKEN={token}
 VOICESTUDIO_URL={vs_url}
 VOICESTUDIO_VOICE={voice}
@@ -352,13 +350,13 @@ AUTOSTART={autostart}
 """
     try:
         ENV_PATH.write_text(env_content, encoding="utf-8")
-        log.info("Configuración actualizada en .env")
-        # Actualización en caliente si el bot está activo
+        log.info("Configuration updated in .env")
+        # Hot reload active bot config if running
         if manager.bot:
             manager.bot.cfg["voice"] = voice
             manager.bot.cfg["max_chars"] = max_chars
             manager.bot.cfg["vs_url"] = vs_url
-            log.info("Configuración del bot en memoria actualizada en caliente sin reiniciar.")
+            log.info("Active bot configuration hot-reloaded in memory.")
         return web.json_response({"ok": True})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
@@ -383,7 +381,7 @@ async def handle_events(request: web.Request) -> web.StreamResponse:
     )
     await resp.prepare(request)
 
-    # Enviar logs acumulados al conectar
+    # Send buffered logs on initial connection
     for entry in list(log_handler.buffer):
         payload = f"event: log\ndata: {json.dumps(entry)}\n\n".encode("utf-8")
         await resp.write(payload)
@@ -394,7 +392,6 @@ async def handle_events(request: web.Request) -> web.StreamResponse:
     try:
         while True:
             try:
-                # Esperar nuevo log o enviar heartbeat ping
                 entry = await asyncio.wait_for(queue.get(), timeout=12.0)
                 payload = f"event: log\ndata: {json.dumps(entry)}\n\n".encode("utf-8")
                 await resp.write(payload)
@@ -437,7 +434,7 @@ async def main():
         await site.start()
     except OSError as e:
         if getattr(e, "winerror", None) == 10048 or "10048" in str(e):
-            log.warning("⚠️ El puerto %d ya está en uso. Es probable que ya tengas otra ventana del panel abierta.", PORT)
+            log.warning("⚠️ Port %d is already in use. Another instance of the panel is likely already running.", PORT)
             try:
                 webbrowser.open(f"http://127.0.0.1:{PORT}")
             except Exception:
@@ -447,26 +444,23 @@ async def main():
 
     url = f"http://127.0.0.1:{PORT}"
     log.info("╔════════════════════════════════════════════════════════╗")
-    log.info("║  🎙️  ReVox Control Panel listo en: %s      ║", url)
+    log.info("║  🎙️  ReVox Control Panel ready at: %s        ║", url)
     log.info("╚════════════════════════════════════════════════════════╝")
 
-    # Abrir navegador automáticamente
     try:
         webbrowser.open(url)
     except Exception:
         pass
 
-    # Autostart si está configurado
     if cfg.get("autostart") and cfg.get("token"):
-        log.info("Autostart habilitado: iniciando bot automáticamente...")
+        log.info("Autostart enabled: starting bot automatically...")
         asyncio.create_task(manager.start())
 
-    # Mantener el proceso vivo
     try:
         while True:
             await asyncio.sleep(3600)
     except (KeyboardInterrupt, asyncio.CancelledError):
-        log.info("Cerrando panel...")
+        log.info("Shutting down panel...")
         await manager.stop()
         await runner.cleanup()
 

@@ -1,6 +1,6 @@
-"""Bot de Discord que lee en voz alta lo que escribís, usando VoiceStudio (local) como TTS.
+"""Discord Bot that reads your chat messages aloud using VoiceStudio (local) for real-time TTS.
 
-Se puede correr solo (`python bot.py`) o desde el panel (`python panel.py`).
+Can be run standalone (`python bot.py`) or via the web panel (`python panel.py`).
 """
 import asyncio
 import io
@@ -23,24 +23,24 @@ ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 
 
 def sanitize_tts_text(raw_text: str, max_chars: int = 400) -> str:
-    """Limpia el texto antes de enviarlo a VoiceStudio para que suene natural al hablar."""
+    """Clean and normalize text before sending to VoiceStudio so it sounds natural."""
     if not raw_text:
         return ""
-    # Reemplazar bloques de código ```...``` por "bloque de código"
-    t = re.sub(r"```[\s\S]*?```", " bloque de código ", raw_text)
-    # Reemplazar enlaces http/https por "enlace" para evitar lectura letra por letra
-    t = re.sub(r"https?://\S+", " enlace ", t)
-    # Reemplazar menciones de canales o roles
-    t = re.sub(r"<#\d+>", " canal ", t)
-    t = re.sub(r"<@&\d+>", " rol ", t)
+    # Replace code blocks ```...``` with "code block"
+    t = re.sub(r"```[\s\S]*?```", " code block ", raw_text)
+    # Replace URLs with "link" to avoid character-by-character spelling
+    t = re.sub(r"https?://\S+", " link ", t)
+    # Replace channel or role mentions
+    t = re.sub(r"<#\d+>", " channel ", t)
+    t = re.sub(r"<@&\d+>", " role ", t)
     t = re.sub(r"\|\|(.*?)\|\|", r"\1", t)
-    # Normalizar espacios en blanco y saltos de línea repetidos
+    # Normalize whitespaces and repeated line breaks
     t = " ".join(t.split())
     return t[:max_chars].strip()
 
 
 def load_config() -> dict:
-    """Lee .env cada vez, así los cambios hechos desde el panel aplican al reiniciar el bot."""
+    """Read .env on every reload so panel updates take effect upon bot restarts."""
     load_dotenv(ENV_PATH, override=True)
     return {
         "token": os.getenv("DISCORD_TOKEN", "").strip(),
@@ -57,7 +57,7 @@ def vs_headers(cfg: dict) -> dict:
 
 
 async def fetch_voices(session: aiohttp.ClientSession, cfg: dict) -> list[dict]:
-    """Perfiles de voz guardados en VoiceStudio (sin los alias de OpenAI)."""
+    """Fetch saved voice profiles from VoiceStudio (excluding OpenAI aliases)."""
     async with session.get(f"{cfg['vs_url']}/v1/audio/voices", headers=vs_headers(cfg)) as r:
         r.raise_for_status()
         voices = (await r.json())["voices"]
@@ -74,7 +74,7 @@ _ids = itertools.count(1)
 class Item:
     text: str
     author: str
-    source: str  # "chat" | "/decir" | "panel"
+    source: str  # "chat" | "/say" | "panel"
     id: int = field(default_factory=lambda: next(_ids))
     ts: float = field(default_factory=time.time)
 
@@ -87,7 +87,7 @@ class GuildState:
         self.items: deque[Item] = deque()
         self.wake = asyncio.Event()
         self.now: Item | None = None
-        self.phase: str | None = None  # "generando" | "hablando"
+        self.phase: str | None = None  # "generating" | "speaking"
         self.worker: asyncio.Task | None = None
 
     def push(self, item: Item):
@@ -98,7 +98,7 @@ class GuildState:
 class TTSBot(discord.Client):
     def __init__(self, cfg: dict):
         intents = discord.Intents.default()
-        intents.message_content = True  # activarlo también en el Developer Portal
+        intents.message_content = True  # Must also be enabled in Discord Developer Portal
         super().__init__(intents=intents)
         self.cfg = cfg
         self.tree = app_commands.CommandTree(self)
@@ -109,7 +109,7 @@ class TTSBot(discord.Client):
         self._register_commands()
 
     async def setup_hook(self):
-        # Generar voz puede tardar (carga del modelo), por eso el timeout largo.
+        # Model loading may take time on cold starts, hence generous timeout.
         self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=600))
         await self.tree.sync()
 
@@ -125,16 +125,16 @@ class TTSBot(discord.Client):
     # ---------- TTS ----------
 
     async def tts(self, text: str, voice: str) -> bytes:
-        """Llama al endpoint OpenAI-compatible de VoiceStudio y devuelve un WAV."""
+        """Call VoiceStudio's OpenAI-compatible endpoint and return WAV audio bytes."""
         payload = {"model": "tts-1", "input": text, "voice": voice, "response_format": "wav"}
         url = f"{self.cfg['vs_url']}/v1/audio/speech"
         async with self.session.post(url, json=payload, headers=vs_headers(self.cfg)) as r:
             if r.status != 200:
-                raise RuntimeError(f"VoiceStudio respondió {r.status}: {(await r.text())[:300]}")
+                raise RuntimeError(f"VoiceStudio returned {r.status}: {(await r.text())[:300]}")
             return await r.read()
 
     async def speak_loop(self, st: GuildState):
-        """Procesa la cola de un servidor, un mensaje por vez."""
+        """Process guild queue, one message at a time."""
         while True:
             if not st.items:
                 st.wake.clear()
@@ -144,20 +144,20 @@ class TTSBot(discord.Client):
             vc = st.guild.voice_client
             if not vc or not vc.is_connected():
                 continue
-            st.now, st.phase = item, "generando"
-            entry = {**asdict(item), "guild": st.guild.name, "voice": st.voice, "status": "cancelado"}
+            st.now, st.phase = item, "generating"
+            entry = {**asdict(item), "guild": st.guild.name, "voice": st.voice, "status": "cancelled"}
             try:
                 t0 = time.perf_counter()
                 audio = await self.tts(item.text, st.voice)
                 entry["gen_ms"] = round((time.perf_counter() - t0) * 1000)
 
-                # Re-verificar que el bot siga conectado al canal de voz tras la síntesis
+                # Re-verify bot is still connected to voice channel after TTS generation
                 vc = st.guild.voice_client
                 if not vc or not vc.is_connected():
-                    log.warning("[%s] El bot fue desconectado de voz mientras se generaba el audio.", st.guild.name)
+                    log.warning("[%s] Bot disconnected from voice while synthesizing audio.", st.guild.name)
                     continue
 
-                st.phase = "hablando"
+                st.phase = "speaking"
                 done = asyncio.Event()
                 vc.play(
                     discord.FFmpegPCMAudio(io.BytesIO(audio), pipe=True),
@@ -173,12 +173,12 @@ class TTSBot(discord.Client):
             except Exception as e:
                 entry["status"], entry["error"] = "error", str(e)
                 self.stats["errors"] += 1
-                log.error("TTS falló en %s: %s", st.guild.name, e)
+                log.error("TTS failed on %s: %s", st.guild.name, e)
             finally:
                 st.now = st.phase = None
                 self.history.appendleft(entry)
 
-    # ---------- Acciones (usadas por comandos y por el panel) ----------
+    # ---------- Actions (called by commands and web panel) ----------
 
     def enqueue(self, guild_id: int, text: str, author: str, source: str) -> bool:
         st = self.state.get(guild_id)
@@ -187,9 +187,9 @@ class TTSBot(discord.Client):
         clean_text = sanitize_tts_text(text, self.cfg["max_chars"])
         if not clean_text:
             return False
-        # Protección anti-spam: máximo 30 mensajes pendientes por servidor
+        # Queue limit protection: max 30 pending messages per server
         if len(st.items) >= 30:
-            st.items.popleft()  # descartar el mensaje más viejo para dar lugar al nuevo
+            st.items.popleft()  # Discard oldest to prioritize current conversation
         st.push(Item(clean_text, author, source))
         return True
 
@@ -213,7 +213,7 @@ class TTSBot(discord.Client):
         guild = self.get_guild(guild_id)
         if guild and guild.voice_client:
             await guild.voice_client.disconnect()
-        log.info("Salí del canal de voz en %s", guild.name if guild else guild_id)
+        log.info("Left voice channel in %s", guild.name if guild else guild_id)
 
     async def resolve_voice(self, name_or_id: str) -> dict | None:
         voices = await fetch_voices(self.session, self.cfg)
@@ -231,7 +231,7 @@ class TTSBot(discord.Client):
             vc = st.guild.voice_client
             tc = st.guild.get_channel(st.text_channel_id)
             guilds.append({
-                "id": str(gid),  # string: los IDs de Discord no entran en un número de JS
+                "id": str(gid),  # Stringified: Discord IDs exceed JS Number.MAX_SAFE_INTEGER
                 "name": st.guild.name,
                 "voice_channel": vc.channel.name if vc and vc.channel else None,
                 "text_channel": tc.name if tc else None,
@@ -252,10 +252,10 @@ class TTSBot(discord.Client):
             "stats": self.stats,
         }
 
-    # ---------- Eventos ----------
+    # ---------- Events ----------
 
     async def on_ready(self):
-        log.info("Conectado como %s — VoiceStudio en %s", self.user, self.cfg["vs_url"])
+        log.info("Connected as %s — VoiceStudio at %s", self.user, self.cfg["vs_url"])
 
     async def on_message(self, message: discord.Message):
         if message.author.bot or not message.guild:
@@ -265,22 +265,21 @@ class TTSBot(discord.Client):
             self.enqueue(message.guild.id, message.clean_content, message.author.display_name, "chat")
 
     async def on_voice_state_update(self, member, before, after):
-        # Si alguien desconecta al bot a mano, limpiamos su estado.
+        # If someone manually disconnects the bot, clean up guild state
         if member.id == self.user.id and before.channel and not after.channel:
             st = self.state.pop(member.guild.id, None)
             if st and st.worker:
                 st.worker.cancel()
-                log.info("Me desconectaron del canal de voz en %s", member.guild.name)
+                log.info("Bot was disconnected from voice channel in %s", member.guild.name)
 
     # ---------- Slash commands ----------
 
     def _register_commands(self):
         bot = self
 
-        @self.tree.command(name="entrar", description="El bot entra a tu canal de voz y lee este canal de texto")
-        async def entrar(inter: discord.Interaction):
+        async def _join_handler(inter: discord.Interaction):
             if not inter.user.voice or not inter.user.voice.channel:
-                return await inter.response.send_message("Primero metete en un canal de voz.", ephemeral=True)
+                return await inter.response.send_message("Please join a voice channel first.", ephemeral=True)
             await inter.response.defer()
             channel = inter.user.voice.channel
             vc = inter.guild.voice_client
@@ -296,43 +295,82 @@ class TTSBot(discord.Client):
                 st = bot.state[inter.guild.id] = GuildState(inter.guild, inter.channel.id, bot.cfg["voice"])
             if not st.worker or st.worker.done():
                 st.worker = asyncio.create_task(bot.speak_loop(st))
-            log.info("Entré a %s / %s (lee #%s)", inter.guild.name, channel.name, inter.channel.name)
-            await inter.followup.send(f"🔊 En **{channel.name}**. Leo lo que escriban en {inter.channel.mention}.")
+            log.info("Joined %s / %s (reading #%s)", inter.guild.name, channel.name, inter.channel.name)
+            await inter.followup.send(f"🔊 Joined **{channel.name}**. Reading chat from {inter.channel.mention}.")
 
-        @self.tree.command(name="salir", description="El bot sale del canal de voz")
-        async def salir(inter: discord.Interaction):
+        async def _leave_handler(inter: discord.Interaction):
             await bot.leave(inter.guild.id)
-            await inter.response.send_message("👋 Chau.")
+            await inter.response.send_message("👋 Left the voice channel.")
 
-        @self.tree.command(name="decir", description="Decir un texto (útil desde otro canal)")
-        @app_commands.describe(texto="Lo que querés que diga")
-        async def decir(inter: discord.Interaction, texto: str):
-            if not inter.guild.voice_client or not bot.enqueue(inter.guild.id, texto, inter.user.display_name, "/decir"):
-                return await inter.response.send_message("Usá /entrar primero.", ephemeral=True)
-            await inter.response.send_message(f"🗣️ {texto[: bot.cfg['max_chars']]}", ephemeral=True)
+        async def _say_handler(inter: discord.Interaction, text: str):
+            if not inter.guild.voice_client or not bot.enqueue(inter.guild.id, text, inter.user.display_name, "/say"):
+                return await inter.response.send_message("Please use /join first.", ephemeral=True)
+            await inter.response.send_message(f"🗣️ {text[: bot.cfg['max_chars']]}", ephemeral=True)
 
-        @self.tree.command(name="voz", description="Cambiar la voz (ID o nombre del perfil guardado en VoiceStudio)")
-        @app_commands.describe(nombre="ID o nombre del perfil de voz")
-        async def voz(inter: discord.Interaction, nombre: str):
+        async def _voice_handler(inter: discord.Interaction, name: str):
             st = bot.state.get(inter.guild.id)
             if not st:
-                return await inter.response.send_message("Usá /entrar primero.", ephemeral=True)
-            # VoiceStudio usa la voz por defecto si no reconoce el nombre, así que validamos acá.
-            match = await bot.resolve_voice(nombre)
+                return await inter.response.send_message("Please use /join first.", ephemeral=True)
+            match = await bot.resolve_voice(name)
             if not match:
                 names = ", ".join(v["name"] for v in await fetch_voices(bot.session, bot.cfg))
-                return await inter.response.send_message(f"No existe esa voz. Disponibles: {names}", ephemeral=True)
+                return await inter.response.send_message(f"Voice not found. Available voices: {names}", ephemeral=True)
             st.voice = match["voice_id"]
-            await inter.response.send_message(f"Voz cambiada a **{match['name']}**.")
+            await inter.response.send_message(f"Voice changed to **{match['name']}**.")
 
-        @self.tree.command(name="saltar", description="Corta lo que está diciendo y vacía la cola")
-        async def saltar(inter: discord.Interaction):
+        async def _skip_handler(inter: discord.Interaction):
             bot.skip(inter.guild.id, clear=True)
-            await inter.response.send_message("⏭️ Listo.", ephemeral=True)
+            await inter.response.send_message("⏭️ Skipped.", ephemeral=True)
+
+        # Primary English Slash Commands
+        @self.tree.command(name="join", description="Join your current voice channel and read this text channel")
+        async def join_cmd(inter: discord.Interaction):
+            await _join_handler(inter)
+
+        @self.tree.command(name="leave", description="Disconnect the bot from the voice channel")
+        async def leave_cmd(inter: discord.Interaction):
+            await _leave_handler(inter)
+
+        @self.tree.command(name="say", description="Speak text aloud (useful from another channel)")
+        @app_commands.describe(text="The message to speak")
+        async def say_cmd(inter: discord.Interaction, text: str):
+            await _say_handler(inter, text)
+
+        @self.tree.command(name="voice", description="Change the active voice profile (ID or profile name from VoiceStudio)")
+        @app_commands.describe(name="Voice profile name or ID")
+        async def voice_cmd(inter: discord.Interaction, name: str):
+            await _voice_handler(inter, name)
+
+        @self.tree.command(name="skip", description="Stop current playback and clear the pending queue")
+        async def skip_cmd(inter: discord.Interaction):
+            await _skip_handler(inter)
+
+        # Spanish Aliases for backwards compatibility
+        @self.tree.command(name="entrar", description="El bot entra a tu canal de voz y lee este canal de texto")
+        async def entrar_alias(inter: discord.Interaction):
+            await _join_handler(inter)
+
+        @self.tree.command(name="salir", description="El bot sale del canal de voz")
+        async def salir_alias(inter: discord.Interaction):
+            await _leave_handler(inter)
+
+        @self.tree.command(name="decir", description="Decir un texto en el canal de voz")
+        @app_commands.describe(texto="Texto a reproducir")
+        async def decir_alias(inter: discord.Interaction, texto: str):
+            await _say_handler(inter, texto)
+
+        @self.tree.command(name="voz", description="Cambiar perfil de voz de VoiceStudio")
+        @app_commands.describe(nombre="ID o nombre de voz")
+        async def voz_alias(inter: discord.Interaction, nombre: str):
+            await _voice_handler(inter, nombre)
+
+        @self.tree.command(name="saltar", description="Cortar reproducción actual y vaciar cola")
+        async def saltar_alias(inter: discord.Interaction):
+            await _skip_handler(inter)
 
 
 if __name__ == "__main__":
     cfg = load_config()
     if not cfg["token"]:
-        raise SystemExit("Falta DISCORD_TOKEN en .env (o configuralo desde panel.py).")
+        raise SystemExit("Missing DISCORD_TOKEN in .env (or configure it via panel.py).")
     TTSBot(cfg).run(cfg["token"], root_logger=True)

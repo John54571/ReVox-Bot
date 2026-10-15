@@ -1,22 +1,22 @@
-# Guía de Contribución (CONTRIBUTING.md)
+# Contributing Guide (CONTRIBUTING.md)
 
-¡Gracias por tu interés en colaborar con **ReVox**! Toda contribución (reporte de bugs, mejoras en la interfaz, documentación o nuevas características) es bienvenida.
+Thank you for your interest in contributing to **ReVox**! All contributions (bug reports, UI enhancements, documentation improvements, or new features) are welcome.
 
 ---
 
-## 🛠️ Cómo Empezar
+## 🛠️ Getting Started
 
-1. Hacé un **Fork** del repositorio en GitHub.
-2. Cloná tu fork en tu máquina local:
+1. **Fork** the repository on GitHub.
+2. Clone your fork locally:
    ```bash
-   git clone https://github.com/TU_USUARIO/ReVox-Bot.git
+   git clone https://github.com/YOUR_USERNAME/ReVox-Bot.git
    cd ReVox-Bot
    ```
-3. Creá una rama descriptiva para tu cambio:
+3. Create a descriptive branch for your changes:
    ```bash
-   git checkout -b feature/nueva-mejora
+   git checkout -b feature/new-improvement
    ```
-4. Configurá el entorno virtual:
+4. Set up the virtual environment:
    ```powershell
    python -m venv .venv
    .\.venv\Scripts\pip install -r requirements.txt
@@ -25,33 +25,33 @@
 
 ---
 
-## 🧪 Pruebas Locales
+## 🧪 Local Testing
 
-Antes de enviar un Pull Request, verificá que los módulos importen limpiamente:
+Before submitting a Pull Request, verify that all modules import cleanly:
 ```powershell
 .\.venv\Scripts\python -c "import bot, panel; print('ReVox OK')"
 ```
 
-Si modificaste la interfaz web (`web/index.html`), probala en el navegador corriendo:
+If you made changes to the web dashboard (`web/index.html`), test it in your browser by running:
 ```powershell
 .\.venv\Scripts\python panel.py
 ```
 
 ---
 
-## 📝 Estilo de Código y Buenas Prácticas
+## 📝 Code Style & Best Practices
 
-- **Python:** Código limpio, asíncrono (`asyncio`), tipado cuando aporte claridad y respetando PEP 8.
-- **Frontend:** Mantener la estética minimalista y oscura sin añadir librerías pesadas (Tailwind CDN, React o Node.js) para preservar la ligereza del archivo único en HTML/Vanilla JS.
-- **Commits:** Mensajes claros siguiendo el formato Conventional Commits (`feat: ...`, `fix: ...`, `docs: ...`, `refactor: ...`).
+- **Python:** Clean, asynchronous (`asyncio`), typed where appropriate, following PEP 8.
+- **Frontend:** Maintain the minimalist, dark aesthetic without adding heavy external dependencies (Tailwind CDN, React, or Node.js) to keep the dashboard lightweight in a single HTML/Vanilla JS file.
+- **Commits:** Clear commit messages following Conventional Commits (`feat: ...`, `fix: ...`, `docs: ...`, `refactor: ...`).
 
 ---
 
-## 🚀 Enviar tu Pull Request
+## 🚀 Submitting Your Pull Request
 
-1. Asegurate de que no estás incluyendo ningún archivo `.env` o credenciales personales.
-2. Hacé push a tu rama en tu fork:
+1. Make sure no `.env` file or personal credentials are included in your commits.
+2. Push your changes to your fork:
    ```bash
-   git push origin feature/nueva-mejora
+   git push origin feature/new-improvement
    ```
-3. Abrí un Pull Request en el repositorio principal detallando qué problema resuelve tu cambio y cómo probarlo.
+3. Open a Pull Request against the main repository explaining the problem your changes solve and how to test them.

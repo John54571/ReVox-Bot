@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -81,17 +81,6 @@
     }
     .brand-logo-img:hover {
       transform: scale(1.06);
-    }
-    .logo-badge {
-      width: 34px;
-      height: 34px;
-      background: linear-gradient(135deg, #4f46e5, #06b6d4);
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 0 16px rgba(99, 102, 241, 0.35);
     }
     .brand-title {
       font-size: 1rem;
@@ -206,7 +195,7 @@
       gap: 1.5rem;
     }
 
-    /* Banner Quick TTS */
+    /* Quick TTS Card */
     .quick-tts-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -240,7 +229,7 @@
       flex: 1;
       min-width: 260px;
     }
-    input[type="text"], input[type="password"], select {
+    input[type="text"], input[type="password"], input[type="number"], select {
       width: 100%;
       background: rgba(0, 0, 0, 0.35);
       border: 1px solid var(--border);
@@ -677,7 +666,7 @@
       <!-- Bot Status Pill -->
       <div class="status-pill" id="botStatusPill">
         <span class="dot" id="botDot"></span>
-        <span id="botStatusText">Iniciando...</span>
+        <span id="botStatusText">Starting...</span>
       </div>
 
       <!-- VoiceStudio Status Pill -->
@@ -696,9 +685,9 @@
     <div class="header-actions">
       <button id="btnToggleBot" class="btn-primary" onclick="toggleBot()">
         <span id="btnBotIcon">▶</span>
-        <span id="btnBotText">Iniciar Bot</span>
+        <span id="btnBotText">Start Bot</span>
       </button>
-      <button class="btn-secondary btn-icon" onclick="openConfigModal()" title="Configuración">
+      <button class="btn-secondary btn-icon" onclick="openConfigModal()" title="Settings">
         ⚙️
       </button>
     </div>
@@ -710,25 +699,25 @@
     <section class="quick-tts-card">
       <div class="quick-tts-header">
         <div class="quick-tts-title">
-          <span>🔊</span> Enviar TTS al Canal o Probar
+          <span>🔊</span> Send TTS to Channel or Preview
         </div>
-        <div id="activeVoiceDisplay" class="badge">Voz: <span id="currentVoiceBadge">--</span></div>
+        <div id="activeVoiceDisplay" class="badge">Voice: <span id="currentVoiceBadge">--</span></div>
       </div>
       <div class="quick-tts-form">
         <div class="input-group">
-          <input type="text" id="quickInput" placeholder="Escribí un texto para que el bot hable..." maxlength="400" onkeydown="if(event.key==='Enter') sendTTS(false)">
+          <input type="text" id="quickInput" placeholder="Type a message for the bot to speak..." maxlength="400" onkeydown="if(event.key==='Enter') sendTTS(false)">
         </div>
-        <select id="serverSelect" class="select-sm" title="Elegir servidor">
-          <option value="">Seleccionar servidor...</option>
+        <select id="serverSelect" class="select-sm" title="Select Discord server">
+          <option value="">Select server...</option>
         </select>
-        <select id="voiceSelect" class="select-sm" title="Elegir voz para hablar">
-          <option value="">Cargando voces...</option>
+        <select id="voiceSelect" class="select-sm" title="Select voice profile">
+          <option value="">Loading voices...</option>
         </select>
         <button class="btn-primary" onclick="sendTTS(false)">
-          <span>🗣️</span> Hablar en Discord
+          <span>🗣️</span> Speak in Discord
         </button>
-        <button class="btn-secondary" onclick="sendTTS(true)" title="Escuchar el audio en este navegador antes de enviarlo">
-          <span>🎧</span> Probar Audio
+        <button class="btn-secondary" onclick="sendTTS(true)" title="Listen to audio in this browser before sending to Discord">
+          <span>🎧</span> Preview Audio
         </button>
         <audio id="audioPreview" style="display:none;" controls></audio>
       </div>
@@ -740,19 +729,19 @@
       <div class="panel-card">
         <div class="panel-header">
           <div class="panel-title">
-            <span>📡</span> Canales de Voz & Colas Activas
+            <span>📡</span> Voice Channels & Active Queues
           </div>
           <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="refreshState()">
-            ↻ Actualizar
+            ↻ Refresh
           </button>
         </div>
 
         <div class="panel-body" id="guildsContainer">
           <div class="empty-state">
             <div class="empty-icon">🔇</div>
-            <div>El bot no está en ningún canal de voz.</div>
+            <div>The bot is not connected to any voice channel.</div>
             <div style="font-size:12px; color:var(--text-dim); max-width:320px;">
-              Escribí <code>/entrar</code> en cualquier canal de texto de tu Discord para que ReVox se una al canal de voz.
+              Type <code>/join</code> in any Discord text channel for ReVox to join your voice channel.
             </div>
           </div>
         </div>
@@ -762,11 +751,11 @@
       <div class="panel-card">
         <div class="panel-header">
           <div class="panel-title">
-            <span>💻</span> Consola de Logs en Vivo
+            <span>💻</span> Live Console Logs
           </div>
           <div style="display:flex; gap:6px;">
             <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="clearLogs()">
-              Limpiar
+              Clear
             </button>
           </div>
         </div>
@@ -775,15 +764,15 @@
           <!-- Stats Summary -->
           <div class="stats-row">
             <div class="stat-card">
-              <div class="stat-label">Hablados</div>
+              <div class="stat-label">Spoken</div>
               <div class="stat-value" id="statSpoken">0</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Errores</div>
+              <div class="stat-label">Errors</div>
               <div class="stat-value" id="statErrors">0</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Tiempo TTS Prom.</div>
+              <div class="stat-label">Avg TTS Time</div>
               <div class="stat-value" id="statAvgTime">--</div>
             </div>
           </div>
@@ -792,7 +781,7 @@
           <div class="terminal-container">
             <div class="terminal-toolbar">
               <div class="terminal-filters">
-                <button class="filter-btn active" onclick="setLogFilter('ALL')">TODOS</button>
+                <button class="filter-btn active" onclick="setLogFilter('ALL')">ALL</button>
                 <button class="filter-btn" onclick="setLogFilter('INFO')">INFO</button>
                 <button class="filter-btn" onclick="setLogFilter('WARNING')">WARN</button>
                 <button class="filter-btn" onclick="setLogFilter('ERROR')">ERROR</button>
@@ -810,50 +799,50 @@
     </div>
   </main>
 
-  <!-- Modal Configuración -->
+  <!-- Configuration Modal -->
   <div class="modal-backdrop" id="configModal">
     <div class="modal">
       <div class="modal-header">
-        <div class="modal-title">⚙️ Configuración del Bot</div>
+        <div class="modal-title">⚙️ Bot Configuration</div>
         <button class="btn-secondary btn-icon" onclick="closeConfigModal()">✕</button>
       </div>
       <div class="modal-body">
         <div class="form-field">
           <label class="form-label">Discord Bot Token</label>
           <div style="display:flex; gap:6px;">
-            <input type="password" id="cfgToken" placeholder="Pegar token de Discord aquí...">
+            <input type="password" id="cfgToken" placeholder="Paste Discord bot token here...">
             <button type="button" class="btn-secondary" onclick="toggleTokenVisibility()">👁️</button>
           </div>
-          <div class="form-hint">Obtenelo en Discord Developer Portal &gt; Bot &gt; Reset Token.</div>
+          <div class="form-hint">Obtain it from Discord Developer Portal &gt; Bot &gt; Reset Token.</div>
         </div>
 
         <div class="form-field">
           <label class="form-label">VoiceStudio URL</label>
           <input type="text" id="cfgVsUrl" placeholder="http://127.0.0.1:3900">
-          <div class="form-hint">Dirección local donde corre VoiceStudio (puerto 3900 por defecto).</div>
+          <div class="form-hint">Local address where VoiceStudio runs (default port 3900).</div>
         </div>
 
         <div class="form-field">
-          <label class="form-label">Voz por Defecto</label>
+          <label class="form-label">Default Voice</label>
           <select id="cfgDefaultVoice">
-            <option value="default">default (Voz del motor)</option>
+            <option value="default">default (Engine Voice)</option>
           </select>
-          <div class="form-hint">Se asigna a servidores nuevos al ingresar.</div>
+          <div class="form-hint">Assigned to new servers upon joining.</div>
         </div>
 
         <div class="form-field">
-          <label class="form-label">Límite de caracteres por mensaje</label>
+          <label class="form-label">Max characters per message</label>
           <input type="number" id="cfgMaxChars" min="50" max="2000" placeholder="400">
         </div>
 
         <div class="form-field" style="flex-direction:row; align-items:center; gap:8px;">
           <input type="checkbox" id="cfgAutostart">
-          <label for="cfgAutostart" class="form-label" style="cursor:pointer;">Iniciar bot automáticamente al abrir este panel</label>
+          <label for="cfgAutostart" class="form-label" style="cursor:pointer;">Start bot automatically when opening this panel</label>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeConfigModal()">Cancelar</button>
-        <button class="btn-primary" onclick="saveConfig()">Guardar Cambios</button>
+        <button class="btn-secondary" onclick="closeConfigModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveConfig()">Save Changes</button>
       </div>
     </div>
   </div>
@@ -894,7 +883,7 @@
 
           // Populate voices in select
           const sel = document.getElementById('cfgDefaultVoice');
-          sel.innerHTML = '<option value="default">default (Voz del motor)</option>';
+          sel.innerHTML = '<option value="default">default (Engine Voice)</option>';
           appState.voices.forEach(v => {
             const opt = document.createElement('option');
             opt.value = v.voice_id;
@@ -932,11 +921,11 @@
       .then(r => r.json())
       .then(res => {
         if (res.ok) {
-          showToast('Configuración guardada.', 'success');
+          showToast('Configuration saved successfully.', 'success');
           closeConfigModal();
           refreshState();
         } else {
-          showToast(res.error || 'Error al guardar.', 'error');
+          showToast(res.error || 'Failed to save configuration.', 'error');
         }
       });
     }
@@ -952,9 +941,9 @@
         .then(res => {
           btn.disabled = false;
           if (res.ok) {
-            showToast(res.message || 'Comando enviado.', 'success');
+            showToast(res.message || 'Command executed.', 'success');
           } else {
-            showToast(res.error || 'Error en la acción.', 'error');
+            showToast(res.error || 'Action failed.', 'error');
             if (res.error && res.error.toLowerCase().includes('token')) {
               openConfigModal();
             }
@@ -963,7 +952,7 @@
         })
         .catch(err => {
           btn.disabled = false;
-          showToast('Error de conexión con el panel.', 'error');
+          showToast('Connection error with host panel.', 'error');
         });
     }
 
@@ -971,11 +960,11 @@
     function renderState(data) {
       if (!data) return;
 
-      // Si no hay token configurado, abrir modal la primera vez
+      // Prompt modal if no token configured yet
       if (data.config && !data.config.token_masked && !window._firstConfigPrompted) {
         window._firstConfigPrompted = true;
         openConfigModal();
-        showToast('Ingresá tu Token de Discord para comenzar.', 'info');
+        showToast('Please enter your Discord Bot Token to get started.', 'info');
       }
 
       // Update bot status
@@ -989,8 +978,8 @@
 
       if (appState.bot_status === 'running') {
         botDot.className = 'dot online';
-        botStatusText.textContent = data.bot_user ? data.bot_user : 'En línea';
-        btnText.textContent = 'Detener Bot';
+        botStatusText.textContent = data.bot_user ? data.bot_user : 'Online';
+        btnText.textContent = 'Stop Bot';
         btnIcon.textContent = '⏹';
         btn.className = 'btn-danger';
 
@@ -1002,15 +991,15 @@
         }
       } else if (appState.bot_status === 'starting') {
         botDot.className = 'dot busy';
-        botStatusText.textContent = 'Conectando...';
-        btnText.textContent = 'Iniciando...';
+        botStatusText.textContent = 'Connecting...';
+        btnText.textContent = 'Starting...';
         btnIcon.textContent = '⏳';
         btn.className = 'btn-secondary';
         latencyPill.style.display = 'none';
       } else {
         botDot.className = 'dot offline';
-        botStatusText.textContent = 'Detenido';
-        btnText.textContent = 'Iniciar Bot';
+        botStatusText.textContent = 'Stopped';
+        btnText.textContent = 'Start Bot';
         btnIcon.textContent = '▶';
         btn.className = 'btn-primary';
         latencyPill.style.display = 'none';
@@ -1036,20 +1025,19 @@
           data.voices.forEach(v => {
             const opt = document.createElement('option');
             opt.value = v.voice_id;
-            opt.textContent = `${v.name} (${v.language || 'ES'})`;
+            opt.textContent = `${v.name} (${v.language || 'Voice'})`;
             if (v.voice_id === data.config?.voice) opt.selected = true;
             vSel.appendChild(opt);
           });
         }
       } else {
-        // Fallback si VoiceStudio está offline: mostrar al menos la voz configurada
         const vSel = document.getElementById('voiceSelect');
-        if (vSel.options.length === 0 || vSel.options[0].textContent.includes('Cargando')) {
+        if (vSel.options.length === 0 || vSel.options[0].textContent.includes('Loading')) {
           vSel.innerHTML = '';
           const cfgVoice = data.config?.voice || 'default';
           const opt = document.createElement('option');
           opt.value = cfgVoice;
-          opt.textContent = `${cfgVoice} (Voz configurada)`;
+          opt.textContent = `${cfgVoice} (Configured voice)`;
           opt.selected = true;
           vSel.appendChild(opt);
         }
@@ -1064,7 +1052,7 @@
         data.guilds.forEach(g => {
           const opt = document.createElement('option');
           opt.value = g.id;
-          opt.textContent = `${g.name} (${g.voice_channel || 'Sin voz'})`;
+          opt.textContent = `${g.name} (${g.voice_channel || 'No voice'})`;
           sSel.appendChild(opt);
         });
         if (prevVal && [...sSel.options].some(o => o.value === prevVal)) {
@@ -1073,7 +1061,7 @@
       } else {
         const opt = document.createElement('option');
         opt.value = '';
-        opt.textContent = 'Sin canales de voz activos';
+        opt.textContent = 'No active voice channels';
         sSel.appendChild(opt);
       }
 
@@ -1083,9 +1071,9 @@
         guildsContainer.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">🔇</div>
-            <div>El bot no está en ningún canal de voz.</div>
+            <div>The bot is not connected to any voice channel.</div>
             <div style="font-size:12px; color:var(--text-dim); max-width:320px;">
-              Escribí <code>/entrar</code> en cualquier canal de Discord para que ReVox se una a tu canal de voz.
+              Type <code>/join</code> in any Discord text channel for ReVox to join your voice channel.
             </div>
           </div>
         `;
@@ -1095,8 +1083,7 @@
           const card = document.createElement('div');
           card.className = 'guild-card';
 
-          const isSpeaking = g.phase === 'hablando';
-          const isGenerating = g.phase === 'generando';
+          const isSpeaking = g.phase === 'speaking';
 
           let nowPlayingHtml = '';
           if (g.now) {
@@ -1104,10 +1091,10 @@
               <div class="now-playing">
                 <div class="now-playing-header">
                   <div style="display:flex; align-items:center; gap:6px;">
-                    ${isSpeaking ? '<div class="equalizer"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div> Hablando ahora:' : '⏳ Generando audio:'}
+                    ${isSpeaking ? '<div class="equalizer"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div> Speaking now:' : '⏳ Generating audio:'}
                     <span>${escapeHtml(g.now.author)}</span>
                   </div>
-                  <button class="btn-secondary" style="font-size:11px; padding:2px 6px;" onclick="skipAudio('${g.id}')">⏭ Saltar</button>
+                  <button class="btn-secondary" style="font-size:11px; padding:2px 6px;" onclick="skipAudio('${g.id}')">⏭ Skip</button>
                 </div>
                 <div class="now-playing-text">"${escapeHtml(g.now.text)}"</div>
               </div>
@@ -1123,11 +1110,11 @@
                   <span class="queue-author">${escapeHtml(item.author)}:</span>
                   <span class="queue-text" title="${escapeHtml(item.text)}">${escapeHtml(item.text)}</span>
                 </div>
-                <button class="btn-delete" title="Quitar de la cola" onclick="deleteQueueItem('${g.id}', ${item.id})">✕</button>
+                <button class="btn-delete" title="Remove from queue" onclick="deleteQueueItem('${g.id}', ${item.id})">✕</button>
               </div>
             `).join('');
           } else {
-            queueItemsHtml = `<div style="font-size:12px; color:var(--text-dim); padding:4px 0;">La cola está vacía.</div>`;
+            queueItemsHtml = `<div style="font-size:12px; color:var(--text-dim); padding:4px 0;">Queue is empty.</div>`;
           }
 
           card.innerHTML = `
@@ -1136,19 +1123,19 @@
                 <span>🛡️</span> ${escapeHtml(g.name)}
               </div>
               <div class="channel-badges">
-                <span class="badge active">🔊 ${escapeHtml(g.voice_channel || 'Sin voz')}</span>
+                <span class="badge active">🔊 ${escapeHtml(g.voice_channel || 'No voice')}</span>
                 <span class="badge">💬 #${escapeHtml(g.text_channel || 'general')}</span>
                 <span class="badge">🎙️ ${escapeHtml(g.voice)}</span>
-                <button class="btn-secondary" style="font-size:11px; padding:2px 8px; color:var(--danger);" onclick="leaveVoice('${g.id}')" title="Desconectar del canal de voz">
-                  Desconectar
+                <button class="btn-secondary" style="font-size:11px; padding:2px 8px; color:var(--danger);" onclick="leaveVoice('${g.id}')" title="Disconnect from voice channel">
+                  Disconnect
                 </button>
               </div>
             </div>
             ${nowPlayingHtml}
             <div class="queue-container">
               <div class="queue-title">
-                <span>En Cola (${g.queue ? g.queue.length : 0})</span>
-                ${g.queue && g.queue.length > 0 ? `<button class="btn-secondary" style="font-size:10px; padding:1px 6px;" onclick="skipAudio('${g.id}', true)">Vaciar</button>` : ''}
+                <span>In Queue (${g.queue ? g.queue.length : 0})</span>
+                ${g.queue && g.queue.length > 0 ? `<button class="btn-secondary" style="font-size:10px; padding:1px 6px;" onclick="skipAudio('${g.id}', true)">Clear</button>` : ''}
               </div>
               ${queueItemsHtml}
             </div>
@@ -1178,20 +1165,20 @@
       const guild_id = document.getElementById('serverSelect').value;
 
       if (!text) {
-        showToast('Escribí un texto para hablar.', 'error');
+        showToast('Please type a message to speak.', 'error');
         input.focus();
         return;
       }
 
       if (previewOnly) {
-        showToast('Generando preview de audio...', 'info');
+        showToast('Generating audio preview...', 'info');
         fetch('/api/tts/preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text, voice })
         })
         .then(r => {
-          if (!r.ok) throw new Error('Error al generar TTS');
+          if (!r.ok) throw new Error('TTS generation failed');
           return r.blob();
         })
         .then(blob => {
@@ -1199,16 +1186,16 @@
           const audio = document.getElementById('audioPreview');
           audio.src = url;
           audio.play();
-          showToast('Reproduciendo audio localmente.', 'success');
+          showToast('Playing audio locally.', 'success');
         })
         .catch(err => {
-          showToast('VoiceStudio no respondió o falló la generación.', 'error');
+          showToast('VoiceStudio did not respond or generation failed.', 'error');
         });
         return;
       }
 
       if (!guild_id) {
-        showToast('El bot no está en ningún canal de voz activo en Discord.', 'error');
+        showToast('The bot is not connected to any active voice channel in Discord.', 'error');
         return;
       }
 
@@ -1220,11 +1207,11 @@
       .then(r => r.json())
       .then(res => {
         if (res.ok) {
-          showToast('Mensaje agregado a la cola.', 'success');
+          showToast('Message added to queue.', 'success');
           input.value = '';
           refreshState();
         } else {
-          showToast(res.error || 'Error al enviar.', 'error');
+          showToast(res.error || 'Failed to send message.', 'error');
         }
       });
     }
@@ -1290,7 +1277,7 @@
     function setLogFilter(filter) {
       logFilter = filter;
       document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.innerText === filter || (filter === 'ALL' && btn.innerText === 'TODOS'));
+        btn.classList.toggle('active', btn.innerText === filter || (filter === 'ALL' && btn.innerText === 'ALL'));
       });
       renderAllLogs();
     }
