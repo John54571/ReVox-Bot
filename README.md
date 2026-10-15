@@ -68,7 +68,22 @@ flowchart LR
 
 ## 🚀 Guía de Instalación y Replicación
 
-### 1. Requisitos Previos (Windows)
+### 🤖 Opción 1: Instalación Asistida con Agentes de IA (Recomendado)
+
+Si usás un asistente o agente de IA (**Antigravity**, **Cursor**, **Claude Code**, **Codex**, etc.), cloná el repositorio y pegale este prompt directamente:
+
+> 📋 **Prompt para tu Agente de IA:**
+> ```text
+> Instalá y configurá ReVox en mi máquina siguiendo las instrucciones de AGENTS.md. Verificá que Python 3.11 y FFmpeg estén listos en el sistema, creá el entorno virtual e instalá requirements.txt, inicializá .env a partir de .env.example y ejecutá el script para generar el acceso directo en mi Escritorio.
+> ```
+
+El archivo [`AGENTS.md`](AGENTS.md) contiene el protocolo automatizado paso a paso para que cualquier agente configure todo de forma desatendida.
+
+---
+
+### 💻 Opción 2: Instalación Manual
+
+#### 1. Requisitos Previos (Windows)
 
 Instalá Python 3.11+ y FFmpeg si aún no los tenés:
 
@@ -138,12 +153,23 @@ AUTOSTART=0
 
 ---
 
-### 4. Ejecución
+#### 4. Crear Acceso Directo en el Escritorio (Opcional)
+
+Podés crear un acceso directo en tu Escritorio con el logo oficial del bot:
+- Hacé doble clic en **`crear_acceso_directo.bat`**, o
+- Ejecutá en PowerShell:
+  ```powershell
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\crear_acceso_directo.ps1
+  ```
+
+---
+
+#### 5. Ejecución
 
 Tenés dos formas de correr ReVox:
 
-#### 🌟 Opción A: Panel Web de Control (Recomendado)
-Hacé doble clic en **`iniciar_panel.bat`** o ejecutá:
+##### 🌟 Opción A: Panel Web de Control (Recomendado)
+Hacé doble clic en el acceso directo de tu Escritorio, o en **`iniciar_panel.bat`**:
 ```powershell
 .\.venv\Scripts\python panel.py
 ```
