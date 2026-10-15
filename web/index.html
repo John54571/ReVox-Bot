@@ -955,6 +955,9 @@
             showToast(res.message || 'Comando enviado.', 'success');
           } else {
             showToast(res.error || 'Error en la acción.', 'error');
+            if (res.error && res.error.toLowerCase().includes('token')) {
+              openConfigModal();
+            }
           }
           refreshState();
         })
@@ -967,6 +970,13 @@
     // Render Dashboard State
     function renderState(data) {
       if (!data) return;
+
+      // Si no hay token configurado, abrir modal la primera vez
+      if (data.config && !data.config.token_masked && !window._firstConfigPrompted) {
+        window._firstConfigPrompted = true;
+        openConfigModal();
+        showToast('Ingresá tu Token de Discord para comenzar.', 'info');
+      }
 
       // Update bot status
       appState.bot_status = data.bot_status || 'stopped';
